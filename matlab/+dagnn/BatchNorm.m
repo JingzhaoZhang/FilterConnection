@@ -2,13 +2,11 @@ classdef BatchNorm < dagnn.ElementWise
   properties
     numChannels
     epsilon = 1e-4
-    % Yang added
-    useGlobalStats = false
   end
 
   methods
     function outputs = forward(obj, inputs, params)
-      if strcmp(obj.net.mode, 'test') || obj.useGlobalStats
+      if strcmp(obj.net.mode, 'test')
         outputs{1} = vl_nnbnorm(inputs{1}, params{1}, params{2}, ...
                                 'moments', params{3}, ...
                                 'epsilon', obj.epsilon) ;
@@ -19,21 +17,13 @@ classdef BatchNorm < dagnn.ElementWise
     end
 
     function [derInputs, derParams] = backward(obj, inputs, params, derOutputs)
-      if obj.useGlobalStats
-          [derInputs{1}, derParams{1}, derParams{2}, derParams{3}] = ...
-            vl_nnbnorm(inputs{1}, params{1}, params{2}, derOutputs{1}, ...
-                       'moments', params{3}, ...
-                       'epsilon', obj.epsilon) ;
-          derParams{3} = derParams{3} * size(inputs{1},4) ;
-      else
-          [derInputs{1}, derParams{1}, derParams{2}, derParams{3}] = ...
-            vl_nnbnorm(inputs{1}, params{1}, params{2}, derOutputs{1}, ...
-                       'epsilon', obj.epsilon) ;
-          % multiply the moments update by the number of images in the batch
-          % this is required to make the update additive for subbatches
-          % and will eventually be normalized away
-          derParams{3} = derParams{3} * size(inputs{1},4) ;
-      end
+      [derInputs{1}, derParams{1}, derParams{2}, derParams{3}] = ...
+        vl_nnbnorm(inputs{1}, params{1}, params{2}, derOutputs{1}, ...
+                   'epsilon', obj.epsilon) ;
+      % multiply the moments update by the number of images in the batch
+      % this is required to make the update additive for subbatches
+      % and will eventually be normalized away
+      derParams{3} = derParams{3} * size(inputs{1},4) ;
     end
 
     % ---------------------------------------------------------------------

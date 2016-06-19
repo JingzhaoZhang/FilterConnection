@@ -10,8 +10,15 @@ function now=sparse_conv_forward(layer, pre, now)
     % set the corresponding filters to 0
     layer.weights{1} = setzero(layer.weights{1}, layer.zeroid);
     % then normal convolution
+    if layer.useGPU
+        w1 = gpuArray(layer.weights{1});
+        w2 = gpuArray(layer.weights{2});
+    else
+        w1 = layer.weights{1};
+        w2 = layer.weights{2};
+    end
     now.x = vl_nnconv(pre.x, ...
-        layer.weights{1}, layer.weights{2}, ...
+        w1, w2, ...
         'stride', layer.stride, ...
         'pad', layer.pad);
 end

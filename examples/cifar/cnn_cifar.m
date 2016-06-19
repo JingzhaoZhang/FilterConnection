@@ -39,12 +39,14 @@ if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
 
 switch opts.modelType
   case 'lenet'
-    net = cnn_cifar_init('networkType', opts.networkType) ;
+    net = cnn_cifar_init('networkType', opts.networkType, 'gpus', opts.train.gpus) ;
   case 'nin'
     net = cnn_cifar_init_nin('networkType', opts.networkType) ;
   otherwise
     error('Unknown model type ''%s''.', opts.modelType) ;
 end
+
+
 
 if exist(opts.imdbPath, 'file')
   imdb = load(opts.imdbPath) ;

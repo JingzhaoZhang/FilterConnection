@@ -29,13 +29,16 @@ expDir = fullfile(vl_rootnn, 'data', ['cifar-' tag]);
 cnn_cifar(opts, 'expDir', expDir);
 %%
 opts.train.gpus=7;
+opts.train.learningRate = [0.001 * ones(150, 1) ];
+opts.train.numEpochs = numel(opts.train.learningRate);
 tag = 'sparse-nnz_3_16_16_32_64';
 
 expDir = fullfile(vl_rootnn, 'data', ['cifar-' tag]);
 cnn_cifar(opts, 'expDir', expDir);
 %%
 opts.train.gpus=8;
-tag = 'sparse-nnz_3_4_4_4_64v3';
-
+tag = 'sparse-nnz_3_32_32_64_64';
+opts.train.learningRate = [0.001 * ones(80, 1) ];
+opts.train.numEpochs = numel(opts.train.learningRate);
 expDir = fullfile(vl_rootnn, 'data', ['cifar-' tag]);
 cnn_cifar(opts, 'expDir', expDir);

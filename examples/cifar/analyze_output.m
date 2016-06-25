@@ -12,13 +12,13 @@ opts=struct('modelType', 'lenet',...
 % the sparse parameters include: nnz
 %%
 opts.train.gpus=1;
-tag = 'fully_connected';
+tag = 'sparse-nnz_3_16_16_32_64';
 
 imdb = load(opts.imdbPath);
 opts.expDir = fullfile(vl_rootnn, 'data', ['cifar-' tag]);
 
 %Load the last epoch's result
-Epoch = 120;
+Epoch = 200;
 modelPath = fullfile(opts.expDir, sprintf('net-epoch-%d.mat', Epoch));
 load(modelPath,'net', 'stats') ;
 net = vl_simplenn_tidy(net) ;

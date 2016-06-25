@@ -38,6 +38,8 @@ if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
 % -------------------------------------------------------------------------
 
 switch opts.modelType
+  case 'lagragian'
+    net = le_cnn_cifar_init('networkType', opts.networkType, 'gpus', opts.train.gpus) ;
   case 'lenet'
     net = cnn_cifar_init('networkType', opts.networkType, 'gpus', opts.train.gpus) ;
   case 'nin'

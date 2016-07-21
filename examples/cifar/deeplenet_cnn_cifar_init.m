@@ -1,4 +1,4 @@
-function net = cnn_cifar_init(varargin)
+function net = deeplenet_cnn_cifar_init(varargin)
 % the network configurations
 %add_conv_custom=@add_sparse_conv; % add_conv_custom=@add_conv;
 %nnz= [3 4 4 4 64];
@@ -8,9 +8,11 @@ nextLayerId = 0;
 %%
 opts.networkType = 'simplenn' ;
 opts.gpus=[];
-opts.nnz = [3, 32,32,64,64];
+opts.nnz = [3, 16,16,32,64];
 opts.add_conv_custom = @add_sparse_conv;
+opts.weightinit = 'xavierimproved';
 opts = vl_argparse(opts, varargin) ;
+
 add_conv_custom = opts.add_conv_custom;
 nnz = opts.nnz;
 % Yang: learning rate is wrong
@@ -25,25 +27,43 @@ net.layers{end}.weights{1}=randn(5, 5, 3, 32, 'single')*0.0001;
 net = add_pool(net, 'max', [3 3], 2, [0 1 0 1]);
 net.layers{end+1} = struct('type', 'relu') ;
 
+
+
+
+
 % Block 2
 net = add_conv_custom(net, [5 5 32 32], lr, 1, 2, nnz(2), useGPU);
 net.layers{end}.weights{1}=randn(5, 5, 32, 32, 'single')*0.01;
 net.layers{end+1} = struct('type', 'relu') ;
+net = add_conv_custom(net, [5 5 32 32], lr, 1, 2, nnz(3), useGPU);
+net.layers{end}.weights{1}=randn(5, 5, 32, 32, 'single')*0.01;
+net.layers{end+1} = struct('type', 'relu') ;
+net = add_conv_custom(net, [5 5 32 32], lr, 1, 2, nnz(4), useGPU);
+net.layers{end}.weights{1}=randn(5, 5, 32, 32, 'single')*0.01;
+net.layers{end+1} = struct('type', 'relu') ;
+
 net = add_pool(net, 'avg', [3 3], 2, [0 1 0 1]);
 
 % Block 3
-net = add_conv_custom(net, [5 5 32 64], lr, 1, 2, nnz(3), useGPU);
-net.layers{end}.weights{1}=randn(5, 5, 32, 64, 'single')*0.01;
+net = add_conv_custom(net, [5 5 32 64], lr, 1, 2, nnz(5), useGPU);
+net.layers{end}.weights{1}=randn(5, 5, 32, 64,  'single')*0.01;
 net.layers{end+1} = struct('type', 'relu') ;
 net = add_pool(net, 'avg', [3 3], 2, [0 1 0 1]);
 
 % Block 4
-net = add_conv_custom(net, [4 4 64 64], lr, 1, 0, nnz(4), useGPU);
+net = add_conv_custom(net, [4 4 64 64], lr, 1, [1,2,1,2], nnz(6), useGPU);
 net.layers{end}.weights{1}=randn(4, 4, 64, 64, 'single')*0.1;
+net.layers{end+1} = struct('type', 'relu') ;
+net = add_conv_custom(net, [4 4 64 64], lr, 1, [1,2,1,2], nnz(7), useGPU);
+net.layers{end}.weights{1}=randn(4, 4, 64, 64, 'single')*0.1;
+net.layers{end+1} = struct('type', 'relu') ;
+net = add_conv_custom(net, [4 4 64 64], lr, 1, 0, nnz(8), useGPU);
+net.layers{end}.weights{1}=randn(4, 4, 64, 64, 'single')*0.1;
+
 %net.layers{end+1} = struct('type', 'relu') ;
 
 % Block 5, change the lr here.
-net = add_conv(net, [1 1 64 10], lr, 1, 0, nnz(5));
+net = add_conv(net, [1 1 64 10], lr, 1, 0, nnz(9));
 net.layers{end}.weights{1}=randn(1, 1, 64, 10, 'single')*0.1;
 
 % Loss layer
@@ -71,5 +91,26 @@ switch lower(opts.networkType)
   otherwise
     assert(false) ;
 end
+end
 
+% -------------------------------------------------------------------------
+function weights = init_weight(opts, h, w, in, out, effective_in, effective_out, type)
+% -------------------------------------------------------------------------
+% See K. He, X. Zhang, S. Ren, and J. Sun. Delving deep into
+% rectifiers: Surpassing human-level performance on imagenet
+% classification. CoRR, (arXiv:1502.01852v1), 2015.
+    switch lower(opts)
+      case 'gaussian'
+        sc = 0.01/opts.scale ;
+        weights = randn(h, w, in, out, type)*sc;
+      case 'xavier'
+        sc = sqrt(3/(h*w*effective_in)) ;
+        weights = (rand(h, w, in, out, type)*2 - 1)*sc ;
+      case 'xavierimproved'
+        sc = sqrt(2/(h*w*effective_out)) ;
+        weights = randn(h, w, in, out, type)*sc ;
+      otherwise
+        error('Unknown weight initialization method''%s''', opts.weightInitMethod) ;
+    end
+end
 

@@ -104,6 +104,7 @@ start = opts.continue * findLastCheckpoint(opts.expDir) ;
 if start >= 1
   fprintf('%s: resuming by loading epoch %d\n', mfilename, start) ;
   [net, stats] = loadState(modelPath(start)) ;
+  net = vl_simplenn_move(net, 'cpu');
 end
 
 for epoch=start+1:opts.numEpochs

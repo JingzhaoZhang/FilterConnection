@@ -12,8 +12,8 @@ opts.networkType = 'simplenn' ;
 opts.gpus=[];
 opts = vl_argparse(opts, varargin) ;
 
-
 tag = 'sparse-nnz_3_32_32_64_64';
+%tag = 'sparse-le-epoch80';
 expDir = fullfile(vl_rootnn, 'data', ['cifar-' tag]);
 %Load the last epoch's result
 Epoch = 80;

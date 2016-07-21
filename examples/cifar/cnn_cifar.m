@@ -30,6 +30,8 @@ opts.whitenData = true ;
 opts.contrastNormalization = true ;
 opts.networkType = 'simplenn' ;
 opts.train = struct() ;
+opts.nnz = [3, 32, 32, 64, 128];
+opts.add_conv_custom = @add_sparse_conv;
 opts = vl_argparse(opts, varargin) ;
 if ~isfield(opts.train, 'gpus'), opts.train.gpus = []; end;
 
@@ -44,6 +46,18 @@ switch opts.modelType
     net = cnn_cifar_init('networkType', opts.networkType, 'gpus', opts.train.gpus) ;
   case 'nin'
     net = cnn_cifar_init_nin('networkType', opts.networkType) ;
+  case 'double_lenet' 
+    net = doublelenet_cnn_cifar_init('nnz', opts.nnz, ...
+        'add_conv_custom', opts.add_conv_custom, 'networkType',...
+        opts.networkType, 'gpus', opts.train.gpus) ;
+  case 'deep_lenet' 
+    net = deeplenet_cnn_cifar_init('nnz', opts.nnz, ...
+        'add_conv_custom', opts.add_conv_custom, 'networkType',...
+        opts.networkType, 'gpus', opts.train.gpus) ;
+  case 'narrow_deep_lenet' 
+    net = deeplenet_cnn_cifar_init('nnz', opts.nnz, ...
+        'add_conv_custom', opts.add_conv_custom, 'networkType',...
+        opts.networkType, 'gpus', opts.train.gpus) ;
   otherwise
     error('Unknown model type ''%s''.', opts.modelType) ;
 end
